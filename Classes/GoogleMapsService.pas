@@ -18,7 +18,7 @@ protected
 public
   class function GetCoordinatesFromAddress(address, api_key :String) :Tcoordinates;
   class function GetAddressMapURL(address, api_key :String) :String;
-  class function GetDirectionsMap(origem :String; destino :String; pontos :Array of String) :String;
+  class function GetDirectionsMap(origem :String; destino :String; pontos :Array of String; api_key :String) :String;
   class function GetDirectionsShareLink(origem :String; destino :String; pontos :Array of String) :String;
 published
 
@@ -43,7 +43,8 @@ begin
 
   url_base   := 'https://www.google.com/maps/embed/v1/place';
   url_origin := '?q=' + address;
-  url_key    := '&key=' + api_key;
+  //url_key    := '&key=' + api_key;
+  url_key    := '&' + api_key;
 
   url := IdURI.URLEncode(url_base + url_origin + url_key);
 
@@ -77,7 +78,8 @@ begin
 
     url_base := 'https://maps.google.com/maps/api/geocode/xml?sensor=false';
     url_address := '&address=' + address;
-    url_key := '&key=' + api_key;
+    //url_key := '&key=' + api_key;
+    url_key := '&' + api_key;
     url := IdURI.UrlEncode(url_base + url_address + url_key);
     xml := UTF8Decode(IdHTTP1.Get(url));
     Result := ParseCoordinatesXML(xml);
@@ -88,7 +90,7 @@ begin
 end;
 
 class function TGoogleMapsService.GetDirectionsMap(origem, destino: String;
-  pontos: array of String): String;
+  pontos: array of String; api_key :String): String;
 var
   HTMLStr :AnsiString;
   html, js, initmap, calcDisplay :String;
@@ -97,14 +99,9 @@ var
 begin
   str := TStringList.Create;
 
-
-  str.Add('<div id="map" style="width: 600;height: 450;"></div>');
-  str.Add('<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpPAESy-z8iO1j8wUCt14cM8TT-7cn3eA&callback=initMap">');
-  str.Add('</script>');
-
-
   str.Add('<div id="map" style="width: 600;height: 450;"></div> ');
-  str.Add(' <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpPAESy-z8iO1j8wUCt14cM8TT-7cn3eA&callback=initMap"> ');
+  //str.Add(' <script async defer src="https://maps.googleapis.com/maps/api/js?key=' + api_key + '&callback=initMap"> ');
+  str.Add(' <script async defer src="https://maps.googleapis.com/maps/api/js?' + api_key + '&callback=initMap"> ');
   str.Add(' </script> ');
 
   str.Add(' <script type="text/javascript"> ');
