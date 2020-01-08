@@ -2,7 +2,7 @@ unit GoogleMapsService;
 
 interface
 
-uses SysUtils;
+uses SysUtils, Classes;
 
 type Tcoordinates = Record
   latitude :Double;
@@ -17,6 +17,9 @@ protected
 
 public
   class function GetCoordinatesFromAddress(address, api_key :String) :Tcoordinates;
+  class function GetAddressMapURL(address, api_key :String) :String;
+  class function GetDirectionsMap(origem :String; destino :String; pontos :Array of String) :String;
+  class function GetDirectionsShareLink(origem :String; destino :String; pontos :Array of String) :String;
 published
 
 end;
@@ -28,6 +31,27 @@ uses IdHTTP, IdSSLOpenSSL, IdURI,
      XmlDoc, XMLIntf,
      Character;
 { TGoogleMapsService }
+
+class function TGoogleMapsService.GetAddressMapURL(address,
+  api_key: String): String;
+var
+  HTMLCODE :String;
+  IdURI :TIdURI;
+  url, url_base, url_origin, url_key :String;
+begin
+  IdURI   := TIdURI.Create();
+
+  url_base   := 'https://www.google.com/maps/embed/v1/place';
+  url_origin := '?q=' + address;
+  url_key    := '&key=' + api_key;
+
+  url := IdURI.URLEncode(url_base + url_origin + url_key);
+
+  HTMLCODE := '<iframe width="600" height="450" frameborder="0" style="border:0" '+
+  ' src="'+ url +'" allowfullscreen></iframe>';
+
+  Result := 'data:text/html,'+HTMLCODE;
+end;
 
 class function TGoogleMapsService.GetCoordinatesFromAddress(address, api_key :String): Tcoordinates;
 var
@@ -63,12 +87,93 @@ begin
   end;
 end;
 
+class function TGoogleMapsService.GetDirectionsMap(origem, destino: String;
+  pontos: array of String): String;
+var
+  HTMLStr :AnsiString;
+  html, js, initmap, calcDisplay :String;
+  str :TStringlist;
+  I :Integer;
+begin
+  str := TStringList.Create;
+
+
+  str.Add('<div id="map" style="width: 600;height: 450;"></div>');
+  str.Add('<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpPAESy-z8iO1j8wUCt14cM8TT-7cn3eA&callback=initMap">');
+  str.Add('</script>');
+
+
+  str.Add('<div id="map" style="width: 600;height: 450;"></div> ');
+  str.Add(' <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpPAESy-z8iO1j8wUCt14cM8TT-7cn3eA&callback=initMap"> ');
+  str.Add(' </script> ');
+
+  str.Add(' <script type="text/javascript"> ');
+  str.Add(' window.onload = function(){initMap()}');
+
+
+  str.Add(' function initMap() { ');
+  str.Add(' var directionsService = new google.maps.DirectionsService; ');
+  str.Add(' var directionsRenderer = new google.maps.DirectionsRenderer; ');
+  str.Add('  var map = new google.maps.Map(document.getElementById(''map''), { ');
+  str.Add('    zoom: 6 }); ');
+  str.Add('  directionsRenderer.setMap(map); ');
+  str.Add('  calculateAndDisplayRoute(directionsService, directionsRenderer); } ');
+
+  str.Add('function calculateAndDisplayRoute(directionsService, directionsRenderer) { ');
+  str.Add(' var waypts = []; ');
+  str.Add(' var checkboxArray = document.getElementById(''waypoints''); ');
+
+  if Length(pontos) > 0 then
+  begin
+    for I := 0 to Length(pontos)- 1 do
+    begin
+      str.Add(' waypts.push({ ');
+      str.Add('   location: ' + QuotedStr(pontos[i]) + ', ');
+      str.Add('   stopover: true ');
+      str.Add(' }) ');
+    end;
+  end;
+
+
+  str.Add(' directionsService.route({ ');
+  str.Add('   origin: ' + QuotedStr(origem) + ', ');
+  str.Add('   destination: ' + QuotedStr(destino) + ', ');
+  str.Add( '   waypoints: waypts, ');
+  str.Add('   optimizeWaypoints: true, ');
+  str.Add( '   travelMode: ''DRIVING'' ');
+  str.Add( ' }, function(response, status) { ');
+  str.Add( '   if (status === ''OK'') { ');
+  str.Add( '     directionsRenderer.setDirections(response); ');
+  str.Add( '   } ');
+  str.Add( ' }); } ');
+  str.Add( ' </script> ');
+
+  str.SaveToFile('C:\tt.html');
+
+  Result := str.text;
+end;
+
+class function TGoogleMapsService.GetDirectionsShareLink(origem,
+  destino: String; pontos: array of String): String;
+var
+  IdURI :TIdURI;
+  url, url_base :String;
+begin
+  IdURI   := TIdURI.Create();
+
+  url_base   := 'https://www.google.com/maps/dir/';
+  url := IdURI.URLEncode(url_base + origem + '/' + destino);
+
+  Result := url;
+end;
+
 class function TGoogleMapsService.ParseCoordinatesXML(xml: String): TCoordinates;
 var
   XMLDocument1 :IXMLDocument;
   geometry, location, results :Ixmlnode;
   lat, lng :String;
 begin
+  { TODO : Fix-me - Remove DecimalSeparator }
   DecimalSeparator := '.';
   XMLDocument1 := TXMLDocument.Create(nil);
   try
@@ -84,6 +189,7 @@ begin
     Result.longitude := StrToFloat(location.ChildNodes['lng'].Text);
   finally
     XMLDocument1 := nil;
+    DecimalSeparator := ',';
   end;
 end;
 
