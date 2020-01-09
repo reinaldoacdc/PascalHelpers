@@ -53,7 +53,8 @@ begin
   HTMLCODE := '<iframe width="600" height="450" frameborder="0" style="border:0" '+
   ' src="'+ url +'" allowfullscreen></iframe>';
 
-  Result := 'data:text/html,'+HTMLCODE;
+  //Result := 'data:text/html,'+HTMLCODE;
+  Result := HTMLCODE;
 end;
 
 class function TGoogleMapsService.GetCoordinatesFromAddress(address, api_key :String): Tcoordinates;
@@ -147,6 +148,8 @@ begin
   str.Add( ' }); } ');
   str.Add( ' </script> ');
 
+  str.SaveToFile('C:\tt.html');
+
   Result := str.text;
 end;
 
@@ -205,8 +208,8 @@ end;
 class function TGoogleMapsService.ParseCoordinatesXML(xml: String): TCoordinates;
 var
   XMLDocument1 :IXMLDocument;
-  geometry, location, results :Ixmlnode;
-  lat, lng :String;
+  stt, geometry, location, results :Ixmlnode;
+  status, lat, lng :String;
 begin
   { TODO : Fix-me - Remove DecimalSeparator }
   DecimalSeparator := '.';
@@ -215,7 +218,21 @@ begin
     //Remove first tag
     Delete(xml, 1, pos('?>', xml)+2);
     XMLDocument1.LoadFromXML(StripNonXml(xml));
-    results := XMLDocument1.DocumentElement.ChildNodes.FindNode('result') ;
+    results := XMLDocument1.DocumentElement.ChildNodes.FindNode('result');
+
+    //parseStatus
+    status := XMLDocument1.DocumentElement.ChildNodes.FindNode('status').Text;
+
+    //stt := XMLDocument1.DocumentElement.ChildNodes.FindNode('status');
+    //stt.HasAttribute('status')
+    //if stt.Attributes['status'] =  'REQUEST_DENIED' then
+    // raise Exception.Create('Chave de Pesquisa incorreta!');
+
+    //status := results.ChildNodes['status'].Text;
+    if status <> 'OK' then
+      raise Exception.Create(XMLDocument1.DocumentElement.ChildNodes.FindNode('error_message').Text);
+    
+
     geometry := results.ChildNodes.FindNode('geometry') ;
     location := geometry.ChildNodes.FindNode('location');
 
