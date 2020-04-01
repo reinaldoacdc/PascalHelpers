@@ -1,16 +1,19 @@
-unit ApplicationHelper;
+﻿unit ApplicationHelper;
 
 interface
-uses Vcl.Forms;
+uses Forms;
 
 type
   TApplicationHelper = class helper for TApplication
     procedure OpenForm( frm :TForm; obj :TFormClass);
     procedure CloseAllForms;
+    Function VersaoExe(Arquivo : String): String;
     procedure Log(text: String);
   end;
 
 implementation
+
+uses WinApi.Windows, SysUtils;
 
 { TApplicationHelper }
 procedure TApplicationHelper.CloseAllForms;
@@ -59,6 +62,41 @@ begin
   if frm = nil then
     frm := obj.Create(nil);
   frm.Show;
+end;
+
+function TApplicationHelper.VersaoExe(Arquivo: String): String;
+type
+   PFFI = ^vs_FixedFileInfo;
+var
+   F : PFFI;
+   Handle : Dword;
+   Len : Longint;
+   Data : Pchar;
+   Buffer : Pointer;
+   Tamanho : Dword;
+   Parquivo: Pchar;
+begin
+   Parquivo := StrAlloc(Length(Arquivo) + 1);
+   StrPcopy(Parquivo, Arquivo);
+   Len := GetFileVersionInfoSize(Parquivo, Handle);
+   Result := '';
+   if Len > 0 then
+   begin
+      Data:=StrAlloc(Len+1);
+      if GetFileVersionInfo(Parquivo,Handle,Len,Data) then
+      begin
+         VerQueryValue(Data, '\',Buffer,Tamanho);
+            F := PFFI(Buffer);
+            Result := Format('%d.%d.%d.%d',
+            [HiWord(F^.dwFileVersionMs),
+            LoWord(F^.dwFileVersionMs),
+            HiWord(F^.dwFileVersionLs),
+            Loword(F^.dwFileVersionLs)]
+            );
+      end;
+      StrDispose(Data);
+   end;
+   StrDispose(Parquivo);
 end;
 
 end.
