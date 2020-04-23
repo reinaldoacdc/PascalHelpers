@@ -1,7 +1,14 @@
 unit StringGridHelper;
 
 interface
-uses Vcl.Grids;
+
+uses
+{$IF COMPILERVERSION >= 22.0}
+ Vcl.Grids;
+{$ELSE}
+  Grids;
+{$IFEND}
+
 
 type
   TStringGridHelper = class helper for TStringGrid
