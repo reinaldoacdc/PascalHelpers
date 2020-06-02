@@ -35,9 +35,9 @@ begin
     else if (Self.Components[i] is TMemo) then
        (Self.Components [i] as TMemo).Text := ''
     else if (Self.Components[i] is TCheckBox) then
-       (Self.Components [i] as TCheckBox).Checked := False
-    else if (Self.Components[i] is TZQuery) then
-        (Self.Components[i] as TZQuery).EmptyDataSet;
+       (Self.Components [i] as TCheckBox).Checked := False;
+    //else if (Self.Components[i] is TZQuery) then
+    //    (Self.Components[i] as TZQuery).EmptyDataSet;
 end;
 
 end.

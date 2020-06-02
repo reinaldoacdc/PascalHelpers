@@ -13,7 +13,15 @@ type
 
 implementation
 
-uses WinApi.Windows, SysUtils;
+uses
+
+{$IF COMPILERVERSION >= 22.0}
+  WinApi.Windows, SysUtils;
+{$ELSE}
+  Windows, SysUtils;
+{$IFEND}
+
+
 
 { TApplicationHelper }
 procedure TApplicationHelper.CloseAllForms;
