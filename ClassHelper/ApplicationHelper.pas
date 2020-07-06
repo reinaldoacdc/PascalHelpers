@@ -9,11 +9,14 @@ type
     procedure CloseAllForms;
     Function VersaoExe(Arquivo : String): String;
     procedure Log(text: String);
+    //
+    procedure RegistryInicialization;
+    procedure UnregistryInicialization;
   end;
 
 implementation
 
-uses WinApi.Windows, SysUtils;
+uses WinApi.Windows, System.SysUtils, System.IOUtils, System.Win.Registry;
 
 { TApplicationHelper }
 procedure TApplicationHelper.CloseAllForms;
@@ -62,6 +65,38 @@ begin
   if frm = nil then
     frm := obj.Create(nil);
   frm.Show;
+end;
+
+procedure TApplicationHelper.RegistryInicialization;
+var
+  Reg :TRegistry;
+  filePath, fileName :string;
+begin
+  Reg := TRegistry.Create;
+  filePath := ExtractFileDir(Application.ExeName)+'\'+ExtractFileName(Application.ExeName);
+  fileName := TPath.GetFileNameWithoutExtension(Application.ExeName);
+  Reg.rootkey:=HKEY_LOCAL_MACHINE;
+  Reg.Openkey('SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN',false);
+  Reg.WriteString(fileName, filePath);
+  Reg.closekey;
+  Reg.Free;
+  //Showmessage('Valor Gravado!');
+end;
+
+procedure TApplicationHelper.UnregistryInicialization;
+var
+  Reg :TRegistry;
+  filePath, fileName :string;
+begin
+  Reg := TRegistry.Create;
+  filePath :=ExtractFileDir(Application.ExeName)+'\'+ExtractFileName(Application.ExeName);
+  fileName := TPath.GetFileNameWithoutExtension(Application.ExeName);
+  Reg.rootkey:=HKEY_LOCAL_MACHINE;
+  Reg.Openkey('SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN',false);
+  Reg.DeleteValue(fileName);
+  Reg.closekey;
+  Reg.Free;
+  //Showmessage('Valor Excluido!');
 end;
 
 function TApplicationHelper.VersaoExe(Arquivo: String): String;
