@@ -13,7 +13,13 @@ implementation
 
 { TFormHelper }
 
-uses Vcl.Mask, Vcl.StdCtrls;
+uses
+
+{$IF COMPILERVERSION >= 22.0}
+  Vcl.Mask, Vcl.StrCtrl;
+{$ELSE}
+  Mask, StdCtrls, ZDataSet;
+{$IFEND}
 
 procedure TFormHelper.ClearForm;
 var
@@ -30,6 +36,8 @@ begin
        (Self.Components [i] as TMemo).Text := ''
     else if (Self.Components[i] is TCheckBox) then
        (Self.Components [i] as TCheckBox).Checked := False;
+    //else if (Self.Components[i] is TZQuery) then
+    //    (Self.Components[i] as TZQuery).EmptyDataSet;
 end;
 
 end.
