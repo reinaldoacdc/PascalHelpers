@@ -99,7 +99,7 @@ begin
   Reg := TRegistry.Create;
   filePath :=ExtractFileDir(Application.ExeName)+'\'+ExtractFileName(Application.ExeName);
   fileName := TPath.GetFileNameWithoutExtension(Application.ExeName);
-  Reg.rootkey:=HKEY_LOCAL_MACHINE;
+  Reg.rootkey:= HKEY_LOCAL_MACHINE;
   Reg.Openkey('SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN',false);
   Reg.DeleteValue(fileName);
   Reg.closekey;

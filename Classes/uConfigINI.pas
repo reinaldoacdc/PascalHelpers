@@ -23,12 +23,15 @@ type
     procedure setUsername(const Value: String);
     function getPassword: String;
     procedure setPassword(const Value: String);
+    function getServidor: String;
+    procedure setServidor(const Value: String);
     public
     published
-        property PathDB :String read getPathDB write setPathDB;
-        property Username :String read getUsername write setUsername;
+        property Servidor :String read getServidor write setServidor;
+        property Caminho :String read getPathDB write setPathDB;
+        property Usuario :String read getUsername write setUsername;
         { TODO : Encrypt get and setter }
-        property Password :String read getPassword write setPassword;
+        property Senha :String read getPassword write setPassword;
   end;
 
 
@@ -67,6 +70,11 @@ begin
   Result := Owner.ReadString('AcessoBanco', 'PathDB', '');
 end;
 
+function TConfigIniAcessoBanco.getServidor: String;
+begin
+  Result := Owner.ReadString('AcessoBanco', 'Servidor', '');
+end;
+
 function TConfigIniAcessoBanco.getUsername: String;
 begin
   Result := Owner.ReadString('AcessoBanco', 'Username', '');
@@ -82,12 +90,15 @@ begin
   Owner.WriteString('AcessoBanco', 'PathDB', Value);
 end;
 
+procedure TConfigIniAcessoBanco.setServidor(const Value: String);
+begin
+  Owner.WriteString('AcessoBanco', 'Servidor', Value);
+end;
+
 procedure TConfigIniAcessoBanco.setUsername(const Value: String);
 begin
   Owner.WriteString('AcessoBanco', 'Username', Value);
 end;
-
-{ TConfigIni }
 
 { TConfigIni }
 

@@ -57,7 +57,7 @@ begin
     Fparams.Servidor :=  ConfigINI.AcessoBanco.Servidor;
     Fparams.Caminho  :=  ConfigINI.AcessoBanco.Caminho;
     Fparams.Usuario  :=  ConfigINI.AcessoBanco.Usuario;
-    Fparams.Senha    :=  ConfigINI.AcessoBanco.SenhaFirebird;
+    Fparams.Senha    :=  ConfigINI.AcessoBanco.Senha;
   end;
   
 
@@ -96,7 +96,9 @@ end;
 
 procedure TDao.GrantPermission(objectName, userName: String);
 begin
-
+  Fquery.SQL.Text := Format('grant select, delete, insert, update on  %s  to %s ;',
+                            [objectName, username]);
+  Fquery.ExecSQL;
 end;
 
 end.
