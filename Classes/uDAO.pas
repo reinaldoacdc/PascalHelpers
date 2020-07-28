@@ -4,9 +4,17 @@ interface
 
 uses System.SysUtils, Firedac.Comp.Client;
 
+type TDadosAcesso = record
+  Servidor :String;
+  Caminho :String;
+  Usuario :String;
+  Senha :String;
+end;
+
 type TDao = class(TObject)
 private
   Fconnection :TFDConnection;
+  Fparams :TDadosAcesso;
   Fquery :TFDQuery;
 
   procedure AbreBanco;
@@ -17,7 +25,8 @@ public
   procedure CreateUser(username, password :String);
   procedure GrantPermission(objectName, userName :String);
 
-  constructor Create;
+  constructor Create; overload;
+  constructor Create(params :TDadosAcesso); overload;
   destructor Destroy; override;
   
 published
@@ -26,27 +35,43 @@ end;
 
 implementation
 
-  uses uConfigINI;
+  uses Variants, uConfigINI, Encriptacao;
 
 { TDao }
 
 procedure TDao.AbreBanco;
 begin
   Fconnection.DriverName := 'FB';
-  Fconnection.Params.Database := ConfigINI.AcessoBanco.PathDB;
-  Fconnection.Params.UserName := ConfigINI.AcessoBanco.UserName;
-  Fconnection.Params.Password := ConfigINI.AcessoBanco.Password;
+  Fconnection.Params.Values['Server'] := Fparams.Servidor;
+  Fconnection.Params.Database := Fparams.Caminho;
+  Fconnection.Params.UserName := Fparams.Usuario;
+  Fconnection.Params.Password := Crypt(crDecriptar, Fparams.Senha, kCh);
 
   Fconnection.Connected := True;
 end;
 
 constructor TDao.Create;
 begin
+  if Self.Fparams.Caminho = '' then
+  begin
+    Fparams.Servidor :=  ConfigINI.AcessoBanco.Servidor;
+    Fparams.Caminho  :=  ConfigINI.AcessoBanco.Caminho;
+    Fparams.Usuario  :=  ConfigINI.AcessoBanco.Usuario;
+    Fparams.Senha    :=  ConfigINI.AcessoBanco.SenhaFirebird;
+  end;
+  
+
   Fconnection := TFDConnection.Create(nil);
   Fquery := TFDQuery.Create(nil);
 
   Fquery.Connection := Fconnection;
   AbreBanco;
+end;
+
+constructor TDao.Create(params: TDadosAcesso);
+begin
+  Fparams := params;
+  Self.Create();
 end;
 
 procedure TDao.CreateUser(username, password: String);
