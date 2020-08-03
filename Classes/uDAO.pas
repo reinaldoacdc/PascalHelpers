@@ -13,14 +13,14 @@ end;
 
 type TDao = class(TObject)
 private
-  Fconnection :TFDConnection;
+
   Fparams :TDadosAcesso;
   Fquery :TFDQuery;
 
   procedure AbreBanco;
   procedure FechaBanco;  
 protected
-
+  Fconnection :TFDConnection;
 public
   procedure CreateUser(username, password :String);
   procedure GrantPermission(objectName, userName :String);
@@ -45,7 +45,7 @@ begin
   Fconnection.Params.Values['Server'] := Fparams.Servidor;
   Fconnection.Params.Database := Fparams.Caminho;
   Fconnection.Params.UserName := Fparams.Usuario;
-  Fconnection.Params.Password := Crypt(crDecriptar, Fparams.Senha, kCh);
+  Fconnection.Params.Password := Fparams.Senha; //Crypt(crDecriptar, Fparams.Senha, kCh);
 
   Fconnection.Connected := True;
 end;
