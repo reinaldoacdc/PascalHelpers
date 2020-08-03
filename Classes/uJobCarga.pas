@@ -9,6 +9,8 @@ uses
 Type
 TJob = class
 private
+  FserverParam :TDadosAcesso;
+  FclientParam :TDadosAcesso;
   //
   Thread: TJvThread;
   ThreadDialog: TJvThreadSimpleDialog;
@@ -27,7 +29,8 @@ protected
 public
   procedure Execute;
 
-  constructor Create(obj :TComponent);
+  constructor Create(obj :TComponent); overload;
+  constructor Create(obj :TComponent; ServerParams, ClientParams :TDadosAcesso); overload;
   destructor Destroy; override;
 published
 
@@ -42,15 +45,23 @@ begin
   thread := TJvThread.Create(obj);
   ThreadDialog := TJvThreadSimpleDialog.Create(obj);
 
-  { TODO : Aqui posso criar meu DAO Server e PDV (conexão como parametro) }
-  FdaoServer := TSyncDao.Create;
-  FdaoPDV := TSyncDao.Create;
+  FdaoServer := TSyncDao.Create(FserverParam);
+  FdaoPDV := TSyncDao.Create(FclientParam);
 
   { TODO : Pegar lista de arquivo texto }
   Flist := TStringList.Create;
   Flist.Add('TESTE');
-  Flist.Add('LOG');
-  Flist.Add('TABELA_UM');
+  //Flist.Add('LOG');
+  //Flist.Add('TABELA_UM');
+end;
+
+constructor TJob.Create(obj: TComponent; ServerParams,
+  ClientParams: TDadosAcesso);
+begin
+  FserverParam := ServerParams;
+  FclientParam := ClientParams;
+
+  Self.Create(obj);
 end;
 
 destructor TJob.Destroy;

@@ -6,11 +6,13 @@ uses uDao, FireDAC.Comp.BatchMove, FireDAC.Comp.BatchMove.SQL;
 type
   TSyncDAO = class(TDao)
     private
+
+      Fparams :TDadosAcesso;
       FbatReader: TFDBatchMoveSQLReader;
       FbatWriter :TFDBatchMoveSQLWriter;
       FbatMove :TFDBatchMove;
     public
-      constructor Create;
+      constructor Create(params :TDadosAcesso);
 
       procedure SetReaderTableName(table :String);
       procedure SetWriterTableName(table :String);
@@ -28,9 +30,11 @@ implementation
 
 { TSyncDAO }
 
-constructor TSyncDAO.Create;
+constructor TSyncDAO.Create(params: TDadosAcesso);
 begin
-   inherited;
+  Fparams := params;
+  inherited;
+
    FbatReader := TFDBatchMoveSQLReader.Create(nil);
    FbatReader.Connection := Self.Fconnection;
 
@@ -47,6 +51,7 @@ begin
   Self.FbatMove.Reader := batReader;
   Self.FbatMove.Writer := batWriter;
 
+  Self.FbatMove.Mode := dmAppendUpdate;
   Self.FbatMove.Execute;
 end;
 
