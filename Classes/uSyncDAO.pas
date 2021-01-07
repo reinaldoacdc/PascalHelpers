@@ -1,7 +1,9 @@
 unit uSyncDAO;
 
 interface
-uses uDao, FireDAC.Comp.BatchMove, FireDAC.Comp.BatchMove.SQL;
+uses uDao
+   , FireDAC.Comp.Client
+   , FireDAC.Comp.BatchMove, FireDAC.Comp.BatchMove.SQL;
 
 type
   TSyncDAO = class(TDao)
@@ -12,10 +14,14 @@ type
       FbatWriter :TFDBatchMoveSQLWriter;
       FbatMove :TFDBatchMove;
     public
+      QuerySync :TFDQuery;
+
       constructor Create(params :TDadosAcesso);
 
       procedure SetReaderTableName(table :String);
       procedure SetWriterTableName(table :String);
+
+      procedure SetReaderSQL(sql :String);
 
       procedure ExecuteSync(batReader :TFDBatchMoveSQLReader; batWriter :TFDBatchMoveSQLWriter);
     published
@@ -44,15 +50,26 @@ begin
    FbatMove   := TFDBatchMove.Create(nil);
    FbatMove.Reader := FbatReader;
    FbatMove.Writer := FbatWriter;
+
+   QuerySync := TFDQuery.Create(nil);
+   QuerySync.SQL.Text := 'SELECT * FROM SINCRONISMO WHERE STATUS = ''N'' ';
+   QuerySync.Connection := Self.Fconnection;
 end;
 
 procedure TSyncDAO.ExecuteSync(batReader :TFDBatchMoveSQLReader; batWriter :TFDBatchMoveSQLWriter);
 begin
+  batWriter.GeneratorName := 'NEW_GENERATOR';
+
   Self.FbatMove.Reader := batReader;
   Self.FbatMove.Writer := batWriter;
 
   Self.FbatMove.Mode := dmAppendUpdate;
   Self.FbatMove.Execute;
+end;
+
+procedure TSyncDAO.SetReaderSQL(sql: String);
+begin
+  Self.batReader.ReadSQL := sql;
 end;
 
 procedure TSyncDAO.SetReaderTableName(table: String);

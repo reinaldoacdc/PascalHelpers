@@ -30,7 +30,7 @@ public
   procedure Execute;
 
   constructor Create(obj :TComponent); overload;
-  constructor Create(obj :TComponent; ServerParams, ClientParams :TDadosAcesso); overload;
+  constructor Create(obj :TComponent; ServerParams, ClientParams :TDadosAcesso; tables :TStrings); overload;
   destructor Destroy; override;
 published
 
@@ -47,19 +47,16 @@ begin
 
   FdaoServer := TSyncDao.Create(FserverParam);
   FdaoPDV := TSyncDao.Create(FclientParam);
-
-  { TODO : Pegar lista de arquivo texto }
-  Flist := TStringList.Create;
-  Flist.Add('TESTE');
-  //Flist.Add('LOG');
-  //Flist.Add('TABELA_UM');
 end;
 
 constructor TJob.Create(obj: TComponent; ServerParams,
-  ClientParams: TDadosAcesso);
+  ClientParams: TDadosAcesso; tables :TStrings);
 begin
   FserverParam := ServerParams;
   FclientParam := ClientParams;
+
+  Flist := TStringList.Create;
+  Flist.AddStrings(tables);
 
   Self.Create(obj);
 end;
